@@ -633,16 +633,49 @@ export async function eliminarDocumentoCrm(documentoId) {
   });
 }
 
-export function getProductoFotoUrl(codigo) {
-  return `${API_BASE}/api/almacen/foto-producto/${encodeURIComponent(codigo)}`;
+export function getProductoFotoUrl(codigo, indice = null) {
+  const base = `${API_BASE}/api/almacen/foto-producto/${encodeURIComponent(codigo)}`;
+  return indice === null || indice === undefined ? base : `${base}/${indice}`;
 }
 
-export async function fetchProductoFotoBlobUrl(codigo) {
+export async function fetchProductoFotosTotal(codigo) {
+  if (!codigo || String(codigo).trim() === '') {
+    return 0;
+  }
+
+  const token = getToken();
+  const response = await fetch(
+    `${API_BASE}/api/almacen/fotos-producto/${encodeURIComponent(codigo)}`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }
+  );
+
+  if (response.status === 401) {
+    removeToken();
+    window.location.href = '/login';
+    throw new Error('Sesión expirada. Por favor inicia sesión de nuevo.');
+  }
+
+  // 204/404 = sin fotos registradas: lo tratamos como 0 para no mostrar error.
+  if (response.status === 204 || response.status === 404) {
+    return 0;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.total || 0;
+}
+
+export async function fetchProductoFotoBlobUrl(codigo, indice = null) {
   if (!codigo || String(codigo).trim() === '') {
     return null;
   }
 
-  const url = getProductoFotoUrl(codigo);
+  const url = getProductoFotoUrl(codigo, indice);
   const token = getToken();
 
   const response = await fetch(url, {

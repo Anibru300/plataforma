@@ -14,6 +14,7 @@ import {
   fetchSeguimientoDocumental,
   fetchSanAntonioOrdenes,
   fetchProductoFotoBlobUrl,
+  fetchProductoFotosTotal,
   fetchHistorialVentas,
   fetchHistorialVentasMetadata,
   exportarHistorialVentas,
@@ -48,6 +49,8 @@ import {
   Warehouse,
   Camera,
   X,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Layers,
   FileSpreadsheet,
@@ -1036,27 +1039,35 @@ function ChartLegend({ items, valueFormatter = (v) => v }) {
   );
 }
 
-function useProductoFoto(codigo) {
-  const [url, setUrl] = useState(null);
+function useProductoFotos(codigo) {
+  const [urls, setUrls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    let objectUrl = null;
+    let objectUrls = [];
     let cancelled = false;
 
     async function load() {
       setLoading(true);
       setError(false);
-      setUrl(null);
+      setUrls([]);
       try {
-        objectUrl = await fetchProductoFotoBlobUrl(codigo);
-        if (!cancelled) {
-          if (objectUrl) {
-            setUrl(objectUrl);
-          } else {
-            setError(true);
-          }
+        const total = await fetchProductoFotosTotal(codigo);
+        if (cancelled) return;
+        if (!total) {
+          setError(true);
+          return;
+        }
+        const results = await Promise.all(
+          Array.from({ length: total }, (_, i) => fetchProductoFotoBlobUrl(codigo, i))
+        );
+        if (cancelled) return;
+        objectUrls = results.filter(Boolean);
+        if (objectUrls.length) {
+          setUrls(objectUrls);
+        } else {
+          setError(true);
         }
       } catch {
         if (!cancelled) {
@@ -1069,21 +1080,30 @@ function useProductoFoto(codigo) {
       }
     }
 
+    if (!codigo || String(codigo).trim() === '') {
+      setLoading(false);
+      setError(false);
+      setUrls([]);
+      return undefined;
+    }
+
     load();
 
     return () => {
       cancelled = true;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
+      objectUrls.forEach((u) => URL.revokeObjectURL(u));
     };
   }, [codigo]);
 
-  return { url, loading, error };
+  return { urls, loading, error };
 }
 
-function ProductoFoto({ codigo, onExpand }) {
-  const { url, loading, error } = useProductoFoto(codigo);
+function ProductoFoto({ codigo, urls, loading, error, onExpand }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [codigo]);
 
   if (error) {
     return (
@@ -1097,41 +1117,112 @@ function ProductoFoto({ codigo, onExpand }) {
     );
   }
 
+  const total = urls.length;
+  const actual = total ? Math.min(index, total - 1) : 0;
+  const prev = () => setIndex((i) => (i - 1 + total) % total);
+  const next = () => setIndex((i) => (i + 1) % total);
+
   return (
-    <button
-      type="button"
-      onClick={onExpand}
-      disabled={loading || !url}
-      className="w-full group relative rounded-xl overflow-hidden border border-gray-200 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-p3-red focus:ring-offset-2 disabled:opacity-70"
-    >
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-p3-red border-t-transparent rounded-full animate-spin"></div>
+    <div className="space-y-2">
+      <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-100 group">
+        <button
+          type="button"
+          onClick={onExpand}
+          disabled={loading || !total}
+          className="w-full block relative focus:outline-none focus:ring-2 focus:ring-p3-red focus:ring-offset-2 disabled:opacity-70"
+        >
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="w-8 h-8 border-4 border-p3-red border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          {total > 0 && (
+            <>
+              <img
+                src={urls[actual]}
+                alt={`Foto ${actual + 1} de ${codigo}`}
+                className="w-full h-64 object-contain bg-white transition-transform duration-300 group-hover:scale-105"
+              />
+              <span className="absolute bottom-2 right-2 bg-gray-900/70 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                Ampliar
+              </span>
+            </>
+          )}
+        </button>
+
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Foto anterior"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/90 hover:bg-white shadow text-gray-700 transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Foto siguiente"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/90 hover:bg-white shadow text-gray-700 transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+            <span className="absolute bottom-2 left-2 bg-gray-900/70 text-white text-[10px] px-2 py-1 rounded">
+              {actual + 1}/{total}
+            </span>
+          </>
+        )}
+      </div>
+
+      {total > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {urls.map((u, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Ver foto ${i + 1}`}
+              className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${
+                i === actual ? 'border-p3-red' : 'border-transparent hover:border-gray-300'
+              }`}
+            >
+              <img src={u} alt={`Miniatura ${i + 1} de ${codigo}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
         </div>
       )}
-      {url && (
-        <>
-          <img
-            src={url}
-            alt={`Foto de ${codigo}`}
-            className="w-full h-64 object-contain bg-white transition-transform duration-300 group-hover:scale-105"
-          />
-          <span className="absolute bottom-2 right-2 bg-gray-900/70 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-            Ampliar
-          </span>
-        </>
-      )}
-    </button>
+    </div>
   );
 }
 
-function ImageLightbox({ codigo, descripcion, onClose }) {
-  const { url, loading, error } = useProductoFoto(codigo);
+function ImageLightbox({ codigo, descripcion, urls, onClose }) {
+  const [index, setIndex] = useState(0);
   const [scale, setScale] = useState(1);
+
+  const total = urls.length;
+  const actual = total ? Math.min(index, total - 1) : 0;
+
+  useEffect(() => {
+    setIndex(0);
+    setScale(1);
+  }, [codigo]);
 
   const toggleZoom = (e) => {
     e.stopPropagation();
     setScale((s) => (s >= 2.5 ? 1 : 2.5));
+  };
+
+  const prev = (e) => {
+    e.stopPropagation();
+    setScale(1);
+    setIndex((i) => (i - 1 + total) % total);
+  };
+
+  const next = (e) => {
+    e.stopPropagation();
+    setScale(1);
+    setIndex((i) => (i + 1) % total);
   };
 
   return (
@@ -1156,31 +1247,51 @@ function ImageLightbox({ codigo, descripcion, onClose }) {
         {scale >= 2.5 ? 'Restablecer' : 'Ampliar'}
       </button>
 
+      {total > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Foto anterior"
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 text-white/90 hover:text-white p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          >
+            <ChevronLeft size={28} />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Foto siguiente"
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 text-white/90 hover:text-white p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          >
+            <ChevronRight size={28} />
+          </button>
+        </>
+      )}
+
       <div
         className="max-w-[95vw] max-h-[95vh] flex flex-col items-center overflow-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {loading && (
-          <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-        )}
-        {error && (
+        {total === 0 ? (
           <div className="bg-gray-800 rounded-2xl p-12 text-center">
             <Camera className="mx-auto text-gray-500 mb-4" size={48} />
             <p className="text-white font-medium">No se pudo cargar la imagen</p>
             <p className="text-gray-400 text-sm mt-1">{codigo}</p>
           </div>
-        )}
-        {url && (
+        ) : (
           <img
-            src={url}
-            alt={`Foto ampliada de ${codigo}`}
+            src={urls[actual]}
+            alt={`Foto ${actual + 1} de ${codigo}`}
             onClick={toggleZoom}
             className="max-w-none max-h-[85vh] object-contain rounded-lg shadow-2xl cursor-zoom-in transition-transform duration-300"
             style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
           />
         )}
         <div className="mt-6 text-center">
-          <p className="text-white font-semibold">{codigo}</p>
+          <p className="text-white font-semibold">
+            {codigo}
+            {total > 1 && <span className="text-white/60 font-normal text-sm"> · {actual + 1}/{total}</span>}
+          </p>
           {descripcion && <p className="text-white/70 text-sm">{descripcion}</p>}
         </div>
       </div>
@@ -1243,6 +1354,7 @@ export default function DashboardPage() {
   // Existencias selected product + lightbox
   const [existenciasSelected, setExistenciasSelected] = useState(null);
   const [fotoLightboxOpen, setFotoLightboxOpen] = useState(false);
+  const fotosSeleccionadas = useProductoFotos(existenciasSelected?.codigo || '');
 
   // Filters
   const EXISTENCIAS_PAGE_SIZE = 50;
@@ -2361,6 +2473,9 @@ export default function DashboardPage() {
 
               <ProductoFoto
                 codigo={existenciasSelected.codigo}
+                urls={fotosSeleccionadas.urls}
+                loading={fotosSeleccionadas.loading}
+                error={fotosSeleccionadas.error}
                 onExpand={() => setFotoLightboxOpen(true)}
               />
 
@@ -2393,6 +2508,7 @@ export default function DashboardPage() {
         <ImageLightbox
           codigo={existenciasSelected.codigo}
           descripcion={existenciasSelected.descripcion}
+          urls={fotosSeleccionadas.urls}
           onClose={() => setFotoLightboxOpen(false)}
         />
       )}

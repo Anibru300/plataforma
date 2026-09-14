@@ -5,6 +5,7 @@ import {
   fetchHistorialVentasMetadata,
   fetchPrecioReferencia,
   fetchProductoFotoBlobUrl,
+  fetchProductoFotosTotal,
   fetchVendedoresCotizaciones,
   guardarCotizacion,
   verCotizacionPdf,
@@ -14,6 +15,8 @@ import VendedoresManager from '../components/cotizador/VendedoresManager';
 import {
   ArrowLeft,
   Calculator,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Image as ImageIcon,
   Package,
@@ -414,6 +417,7 @@ export default function CotizadorPage() {
   }, [lineas]);
 
   // Cargar fotos de producto para los códigos seleccionados en las líneas
+  // fotosMap[codigo] = [url1, url2, ...] (todas las fotos del producto)
   useEffect(() => {
     const codigos = [...new Set(lineas.map((l) => l.codigo).filter(Boolean))];
     let cancelled = false;
@@ -424,10 +428,12 @@ export default function CotizadorPage() {
         if (prev[c]) next[c] = prev[c];
       }
       // Revocar URLs de códigos que ya no están en ninguna línea
-      Object.entries(prev).forEach(([c, url]) => {
-        if (url && !next[c]) {
-          URL.revokeObjectURL(url);
-          createdFotoUrlsRef.current.delete(url);
+      Object.entries(prev).forEach(([c, urls]) => {
+        if (!next[c]) {
+          (urls || []).forEach((u) => {
+            URL.revokeObjectURL(u);
+            createdFotoUrlsRef.current.delete(u);
+          });
         }
       });
       return next;
@@ -447,17 +453,21 @@ export default function CotizadorPage() {
       const resultados = await Promise.allSettled(
         faltantes.map(async (codigo) => {
           try {
-            const url = await fetchProductoFotoBlobUrl(codigo);
-            return { codigo, url };
+            const total = await fetchProductoFotosTotal(codigo);
+            if (!total) return { codigo, urls: [] };
+            const urls = await Promise.all(
+              Array.from({ length: total }, (_, i) => fetchProductoFotoBlobUrl(codigo, i))
+            );
+            return { codigo, urls: urls.filter(Boolean) };
           } catch {
-            return { codigo, url: null };
+            return { codigo, urls: [] };
           }
         })
       );
       if (cancelled) {
         resultados.forEach((r) => {
-          if (r.status === 'fulfilled' && r.value.url) {
-            URL.revokeObjectURL(r.value.url);
+          if (r.status === 'fulfilled') {
+            (r.value.urls || []).forEach((u) => URL.revokeObjectURL(u));
           }
         });
         return;
@@ -465,9 +475,9 @@ export default function CotizadorPage() {
       setFotosMap((prev) => {
         const next = { ...prev };
         for (const r of resultados) {
-          if (r.status === 'fulfilled' && r.value.url) {
-            next[r.value.codigo] = r.value.url;
-            createdFotoUrlsRef.current.add(r.value.url);
+          if (r.status === 'fulfilled') {
+            next[r.value.codigo] = r.value.urls;
+            (r.value.urls || []).forEach((u) => createdFotoUrlsRef.current.add(u));
           }
         }
         return next;
@@ -516,11 +526,11 @@ export default function CotizadorPage() {
       const linea = prev.find((l) => l.id === id);
       if (linea?.codigo) {
         setFotosMap((fotosPrev) => {
-          const url = fotosPrev[linea.codigo];
-          if (url) {
-            URL.revokeObjectURL(url);
-            createdFotoUrlsRef.current.delete(url);
-          }
+          const urls = fotosPrev[linea.codigo] || [];
+          urls.forEach((u) => {
+            URL.revokeObjectURL(u);
+            createdFotoUrlsRef.current.delete(u);
+          });
           const next = { ...fotosPrev };
           delete next[linea.codigo];
           return next;
@@ -617,6 +627,7 @@ export default function CotizadorPage() {
   const handleCodigoChange = (lineaId, codigo) => {
     const codigoLimpio = String(codigo || '').trim();
     actualizarLinea(lineaId, 'codigo', codigoLimpio);
+    actualizarLinea(lineaId, 'foto_indice', undefined);
     if (descripcionesMap[codigoLimpio]) {
       actualizarLinea(lineaId, 'descripcion', descripcionesMap[codigoLimpio]);
     }
@@ -628,6 +639,29 @@ export default function CotizadorPage() {
       cargarPrecioReferencia(lineaId, codigoLimpio);
       delete codigoTimeoutsRef.current[lineaId];
     }, 400);
+  };
+
+  // Índice de la foto que se muestra en una línea: el elegido (foto_indice)
+  // o, por defecto, la última registrada (mismo criterio que el PDF).
+  const fotoActualLinea = (linea) => {
+    const urls = fotosMap[linea.codigo] || [];
+    if (!urls.length) return 0;
+    if (linea.foto_indice !== undefined && linea.foto_indice !== null) {
+      return Math.min(linea.foto_indice, urls.length - 1);
+    }
+    return urls.length - 1;
+  };
+
+  const cambiarFotoLinea = (lineaId, delta) => {
+    setLineas((prev) =>
+      prev.map((l) => {
+        if (l.id !== lineaId) return l;
+        const urls = fotosMap[l.codigo] || [];
+        if (urls.length < 2) return l;
+        const actual = fotoActualLinea(l);
+        return { ...l, foto_indice: (actual + delta + urls.length) % urls.length };
+      })
+    );
   };
 
   // Al desactivar descuentos, resetear porcentajes para que UI y backend coincidan
@@ -688,6 +722,7 @@ export default function CotizadorPage() {
           precio_unitario: Number(l.precio_unitario) || 0,
           descuento_pct: conDescuento ? Number(l.descuento_pct) || 0 : 0,
           stock_leon: Number(l.stock_leon) || 0,
+          foto_indice: l.foto_indice ?? null,
         })),
       };
       console.log('[CotizadorPage] Enviando payload:', data);
@@ -997,25 +1032,50 @@ export default function CotizadorPage() {
                             <div className="w-10 h-10 mx-auto flex items-center justify-center">
                               <div className="w-5 h-5 border border-p3-red border-t-transparent rounded-full animate-spin"></div>
                             </div>
-                          ) : fotosMap[l.codigo] ? (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setFotoModal({
-                                  open: true,
-                                  url: fotosMap[l.codigo],
-                                  codigo: l.codigo,
-                                })
-                              }
-                              className="w-12 h-12 mx-auto rounded border border-gray-200 overflow-hidden hover:border-p3-red focus:outline-none focus:ring-2 focus:ring-p3-red"
-                              title={`Ver foto de ${l.codigo}`}
-                            >
-                              <img
-                                src={fotosMap[l.codigo]}
-                                alt={l.codigo}
-                                className="w-full h-full object-contain"
-                              />
-                            </button>
+                          ) : (fotosMap[l.codigo]?.length || 0) > 0 ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setFotoModal({
+                                    open: true,
+                                    url: fotosMap[l.codigo][fotoActualLinea(l)],
+                                    codigo: l.codigo,
+                                  })
+                                }
+                                className="w-12 h-12 mx-auto rounded border border-gray-200 overflow-hidden hover:border-p3-red focus:outline-none focus:ring-2 focus:ring-p3-red"
+                                title={`Ver foto de ${l.codigo}`}
+                              >
+                                <img
+                                  src={fotosMap[l.codigo][fotoActualLinea(l)]}
+                                  alt={l.codigo}
+                                  className="w-full h-full object-contain"
+                                />
+                              </button>
+                              {fotosMap[l.codigo].length > 1 && (
+                                <div className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                                  <button
+                                    type="button"
+                                    onClick={() => cambiarFotoLinea(l.id, -1)}
+                                    aria-label="Foto anterior"
+                                    className="p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
+                                  >
+                                    <ChevronLeft size={12} />
+                                  </button>
+                                  <span className="tabular-nums">
+                                    {fotoActualLinea(l) + 1}/{fotosMap[l.codigo].length}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => cambiarFotoLinea(l.id, 1)}
+                                    aria-label="Foto siguiente"
+                                    className="p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
+                                  >
+                                    <ChevronRight size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           ) : (
                             <div
                               className="w-10 h-10 mx-auto flex items-center justify-center text-gray-300"
