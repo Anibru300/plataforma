@@ -51,7 +51,7 @@ export default function LoginPage() {
   const displayError = localError || error;
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 overflow-hidden bg-p3-blue">
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden bg-p3-blue">
       {/* Fondo con gradiente animado y formas decorativas */}
       <div className="absolute inset-0 bg-gradient-to-br from-p3-blue via-[#162B6F] to-p3-red-dark" />
       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,rgba(196,30,58,0.35),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.25),transparent_50%)]" />
@@ -73,13 +73,13 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md animate-fade-in-up">
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/25 border border-white/20 overflow-hidden">
           {/* Header con logo */}
-          <div className="relative bg-gradient-to-br from-p3-blue to-[#162B6F] px-8 pt-10 pb-12 text-center overflow-hidden">
+          <div className="relative bg-gradient-to-br from-p3-blue to-[#162B6F] px-6 pt-8 pb-10 sm:px-8 sm:pt-10 sm:pb-12 text-center overflow-hidden">
             {/* Brillo decorativo en el header */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-p3-red/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
             
             <div className="relative flex flex-col items-center">
-              <div className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center p-3 mb-5 ring-4 ring-white/10">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center p-3 mb-5 ring-4 ring-white/10">
                 <img
                   src="/logo.png"
                   alt="3P Logo"
@@ -90,7 +90,7 @@ export default function LoginPage() {
                   }}
                 />
               </div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                 Portal Operativo 3P
               </h1>
               <p className="text-blue-100/90 text-sm mt-2 font-medium">
@@ -100,7 +100,7 @@ export default function LoginPage() {
           </div>
 
           {/* Formulario */}
-          <form onSubmit={totpStep ? handleTotpSubmit : handleSubmit} className="p-8 space-y-6">
+          <form onSubmit={totpStep ? handleTotpSubmit : handleSubmit} className="p-6 sm:p-8 space-y-6">
             {displayError && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3.5 rounded-xl text-sm animate-fade-in-up">
                 <AlertCircle className="shrink-0 mt-0.5" size={18} />

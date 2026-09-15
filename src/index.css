@@ -422,3 +422,33 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
+
+
+/* ============================================
+   ADAPTACIÓN MÓVIL — DataTable (CH-06, Opción A)
+   Primera columna fija al deslizar tablas anchas.
+   Solo aplica abajo de lg; en desktop no hay cambios.
+   ============================================ */
+
+@media (max-width: 1023px) {
+  .dt-sticky-col table {
+    /* ancho natural: permite que la tabla conserve sus columnas
+       y active el scroll horizontal en vez de comprimirse */
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .dt-sticky-col th:first-child,
+  .dt-sticky-col td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: #ffffff;
+    box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.18);
+  }
+
+  .dt-sticky-col th:first-child {
+    z-index: 6;
+    background: #f9fafb;
+  }
+}

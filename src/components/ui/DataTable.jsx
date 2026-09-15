@@ -56,7 +56,7 @@ export default function DataTable({ columns, rows, emptyMessage = 'Sin datos', e
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-md w-full">
+    <div className="dt-sticky-col overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-md w-full">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-gray-600 font-semibold uppercase tracking-wide text-xs">
           <tr>

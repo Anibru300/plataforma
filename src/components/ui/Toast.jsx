@@ -24,8 +24,8 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
       
-      {/* Contenedor de toasts */}
-      <div className="fixed top-24 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+      {/* Contenedor de toasts: a ancho completo en móvil, anclado a la derecha en desktop */}
+      <div className="fixed top-16 sm:top-24 right-2 left-2 sm:left-auto sm:right-4 z-[9999] flex flex-col gap-2 pointer-events-none sm:items-end">
         {toasts.map(toast => (
           <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />
         ))}
@@ -75,7 +75,7 @@ const ToastItem = ({ toast, onRemove }) => {
 
   return (
     <div
-      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm min-w-[300px] max-w-[400px] ${
+      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm w-full sm:w-auto sm:min-w-[300px] sm:max-w-[400px] ${
         bgColors[toast.type]
       } ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}`}
     >
@@ -85,7 +85,7 @@ const ToastItem = ({ toast, onRemove }) => {
       </span>
       <button
         onClick={handleRemove}
-        className="p-1 hover:bg-black/10 rounded-full transition-colors"
+        className="p-2 -m-1 hover:bg-black/10 rounded-full transition-colors"
       >
         <X size={16} className="text-gray-500" />
       </button>
