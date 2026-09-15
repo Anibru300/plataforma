@@ -452,3 +452,21 @@ body {
     background: #f9fafb;
   }
 }
+
+
+/* ============================================
+   ADAPTACIÓN MÓVIL — Gráficas SVG (Opción A)
+   Scroll horizontal en móvil para mantener el
+   texto de las gráficas legible.
+   Solo aplica abajo de sm; en desktop no hay cambios.
+   ============================================ */
+
+@media (max-width: 767px) {
+  .chart-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chart-scroll > svg {
+    min-width: 34rem;
+  }
+}

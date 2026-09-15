@@ -624,12 +624,21 @@ function MultiSearchableSelect({
 function Tooltip({ tooltip }) {
   if (!tooltip) return null;
   return (
-    <div
-      style={{ left: tooltip.x + 12, top: tooltip.y - 12 }}
-      className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg px-2.5 py-1.5 pointer-events-none shadow-lg max-w-xs"
-    >
-      {tooltip.content}
-    </div>
+    <>
+      {tooltip.sticky && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={tooltip.onClose}
+          onTouchStart={tooltip.onClose}
+        />
+      )}
+      <div
+        style={{ left: tooltip.x + 12, top: tooltip.y - 12 }}
+        className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg px-2.5 py-1.5 pointer-events-none shadow-lg max-w-xs"
+      >
+        {tooltip.content}
+      </div>
+    </>
   );
 }
 
@@ -660,40 +669,51 @@ function PieChart({ data, valueFormatter = (v) => v, setTooltip, onItemClick }) 
   });
 
   return (
-    <svg viewBox="0 0 100 100" className="w-full h-auto min-h-[16rem] sm:min-h-[18rem] max-h-80 mx-auto">
-      {slices.map((slice, idx) => (
-        <path
-          key={idx}
-          d={slice.path}
-          fill={slice.color}
-          stroke="#fff"
-          strokeWidth="1"
-          className="transition-opacity duration-200 hover:opacity-80 cursor-pointer"
-          onMouseEnter={(e) =>
-            setTooltip({
-              content: `${slice.label}: ${valueFormatter(slice.value)} (${(slice.frac * 100).toFixed(1)}%)`,
-              x: e.clientX,
-              y: e.clientY,
-            })
-          }
-          onMouseMove={(e) =>
-            setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
-          }
-          onMouseLeave={() => setTooltip(null)}
-          onClick={() => onItemClick?.(slice)}
-        />
-      ))}
-      <circle cx={cx} cy={cy} r={22} fill="white" />
-      <text
-        x={cx}
-        y={cy}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        className="text-[6px] fill-gray-700 font-bold"
-      >
-        {valueFormatter(total)}
-      </text>
-    </svg>
+    <div className="chart-scroll">
+      <svg viewBox="0 0 100 100" className="w-full h-auto min-h-[16rem] sm:min-h-[18rem] max-h-80 mx-auto">
+        {slices.map((slice, idx) => (
+          <path
+            key={idx}
+            d={slice.path}
+            fill={slice.color}
+            stroke="#fff"
+            strokeWidth="1"
+            className="transition-opacity duration-200 hover:opacity-80 cursor-pointer"
+            onMouseEnter={(e) =>
+              setTooltip({
+                content: `${slice.label}: ${valueFormatter(slice.value)} (${(slice.frac * 100).toFixed(1)}%)`,
+                x: e.clientX,
+                y: e.clientY,
+              })
+            }
+            onMouseMove={(e) =>
+              setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
+            }
+            onMouseLeave={() => setTooltip(null)}
+            onClick={(e) => {
+              setTooltip({
+                content: `${slice.label}: ${valueFormatter(slice.value)} (${(slice.frac * 100).toFixed(1)}%)`,
+                x: e.clientX,
+                y: e.clientY,
+                sticky: true,
+                onClose: () => setTooltip(null),
+              });
+              onItemClick?.(slice);
+            }}
+          />
+        ))}
+        <circle cx={cx} cy={cy} r={22} fill="white" />
+        <text
+          x={cx}
+          y={cy}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="text-[6px] fill-gray-700 font-bold"
+        >
+          {valueFormatter(total)}
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -712,53 +732,64 @@ function HorizontalBarChart({ data, valueFormatter = (v) => v, setTooltip, onIte
   const width = labelW + plotW + 80;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[16rem] sm:min-h-[20rem] max-h-[28rem]">
-      {data.map((d, i) => {
-        const y = gap + i * (barH + gap);
-        const w = ((Number(d.value) || 0) / max) * plotW;
-        const label = d.label.length > 40 ? `${d.label.slice(0, 40)}...` : d.label;
-        return (
-          <g key={i}>
-            <text
-              x={labelW - 10}
-              y={y + barH / 2 + 4}
-              textAnchor="end"
-              className="text-base fill-gray-600"
-            >
-              {label}
-            </text>
-            <rect
-              x={labelW}
-              y={y}
-              width={Math.max(w, 2)}
-              height={barH}
-              rx={5}
-              fill={d.color}
-              className="transition-all duration-200 hover:opacity-80 cursor-pointer"
-              onMouseEnter={(e) =>
-                setTooltip({
-                  content: `${d.label}: ${valueFormatter(d.value)}`,
-                  x: e.clientX,
-                  y: e.clientY,
-                })
-              }
-              onMouseMove={(e) =>
-                setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
-              }
-              onMouseLeave={() => setTooltip(null)}
-              onClick={() => onItemClick?.(d)}
-            />
-            <text
-              x={labelW + Math.max(w, 2) + 6}
-              y={y + barH / 2 + 4}
-              className="text-sm fill-gray-600"
-            >
-              {valueFormatter(d.value)}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div className="chart-scroll">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[16rem] sm:min-h-[20rem] max-h-[28rem]">
+        {data.map((d, i) => {
+          const y = gap + i * (barH + gap);
+          const w = ((Number(d.value) || 0) / max) * plotW;
+          const label = d.label.length > 40 ? `${d.label.slice(0, 40)}...` : d.label;
+          return (
+            <g key={i}>
+              <text
+                x={labelW - 10}
+                y={y + barH / 2 + 4}
+                textAnchor="end"
+                className="text-base fill-gray-600"
+              >
+                {label}
+              </text>
+              <rect
+                x={labelW}
+                y={y}
+                width={Math.max(w, 2)}
+                height={barH}
+                rx={5}
+                fill={d.color}
+                className="transition-all duration-200 hover:opacity-80 cursor-pointer"
+                onMouseEnter={(e) =>
+                  setTooltip({
+                    content: `${d.label}: ${valueFormatter(d.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                  })
+                }
+                onMouseMove={(e) =>
+                  setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
+                }
+                onMouseLeave={() => setTooltip(null)}
+                onClick={(e) => {
+                  setTooltip({
+                    content: `${d.label}: ${valueFormatter(d.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                    sticky: true,
+                    onClose: () => setTooltip(null),
+                  });
+                  onItemClick?.(d);
+                }}
+              />
+              <text
+                x={labelW + Math.max(w, 2) + 6}
+                y={y + barH / 2 + 4}
+                className="text-sm fill-gray-600"
+              >
+                {valueFormatter(d.value)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -778,72 +809,83 @@ function VerticalBarChart({ data, valueFormatter = (v) => v, setTooltip, onItemC
   const barW = step * 0.5;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[16rem] sm:min-h-[18rem] max-h-80">
-      <line
-        x1={margin.left}
-        y1={margin.top + plotH}
-        x2={margin.left + plotW}
-        y2={margin.top + plotH}
-        stroke="#e5e7eb"
-        strokeWidth="1"
-      />
-      <line
-        x1={margin.left}
-        y1={margin.top}
-        x2={margin.left}
-        y2={margin.top + plotH}
-        stroke="#e5e7eb"
-        strokeWidth="1"
-      />
-      {data.map((d, i) => {
-        const h = ((Number(d.value) || 0) / max) * plotH;
-        const x = margin.left + i * step + (step - barW) / 2;
-        const y = margin.top + plotH - h;
-        const label = d.label.length > 10 ? `${d.label.slice(0, 10)}...` : d.label;
-        return (
-          <g key={i}>
-            <rect
-              x={x}
-              y={y}
-              width={barW}
-              height={h}
-              rx={4}
-              fill={d.color}
-              className="transition-all duration-200 hover:opacity-80 cursor-pointer"
-              onMouseEnter={(e) =>
-                setTooltip({
-                  content: `${d.label}: ${valueFormatter(d.value)}`,
-                  x: e.clientX,
-                  y: e.clientY,
-                })
-              }
-              onMouseMove={(e) =>
-                setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
-              }
-              onMouseLeave={() => setTooltip(null)}
-              onClick={() => onItemClick?.(d)}
-            />
-            <text
-              x={x + barW / 2}
-              y={margin.top + plotH + 18}
-              textAnchor="start"
-              transform={`rotate(45, ${x + barW / 2}, ${margin.top + plotH + 18})`}
-              className="text-xs fill-gray-600"
-            >
-              {label}
-            </text>
-            <text
-              x={x + barW / 2}
-              y={y - 6}
-              textAnchor="middle"
-              className="text-[10px] fill-gray-500"
-            >
-              {valueFormatter(d.value)}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div className="chart-scroll">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[16rem] sm:min-h-[18rem] max-h-80">
+        <line
+          x1={margin.left}
+          y1={margin.top + plotH}
+          x2={margin.left + plotW}
+          y2={margin.top + plotH}
+          stroke="#e5e7eb"
+          strokeWidth="1"
+        />
+        <line
+          x1={margin.left}
+          y1={margin.top}
+          x2={margin.left}
+          y2={margin.top + plotH}
+          stroke="#e5e7eb"
+          strokeWidth="1"
+        />
+        {data.map((d, i) => {
+          const h = ((Number(d.value) || 0) / max) * plotH;
+          const x = margin.left + i * step + (step - barW) / 2;
+          const y = margin.top + plotH - h;
+          const label = d.label.length > 10 ? `${d.label.slice(0, 10)}...` : d.label;
+          return (
+            <g key={i}>
+              <rect
+                x={x}
+                y={y}
+                width={barW}
+                height={h}
+                rx={4}
+                fill={d.color}
+                className="transition-all duration-200 hover:opacity-80 cursor-pointer"
+                onMouseEnter={(e) =>
+                  setTooltip({
+                    content: `${d.label}: ${valueFormatter(d.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                  })
+                }
+                onMouseMove={(e) =>
+                  setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
+                }
+                onMouseLeave={() => setTooltip(null)}
+                onClick={(e) => {
+                  setTooltip({
+                    content: `${d.label}: ${valueFormatter(d.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                    sticky: true,
+                    onClose: () => setTooltip(null),
+                  });
+                  onItemClick?.(d);
+                }}
+              />
+              <text
+                x={x + barW / 2}
+                y={margin.top + plotH + 18}
+                textAnchor="start"
+                transform={`rotate(45, ${x + barW / 2}, ${margin.top + plotH + 18})`}
+                className="text-xs fill-gray-600"
+              >
+                {label}
+              </text>
+              <text
+                x={x + barW / 2}
+                y={y - 6}
+                textAnchor="middle"
+                className="text-[10px] fill-gray-500"
+              >
+                {valueFormatter(d.value)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -883,6 +925,15 @@ function GaugeChart({ percent, setTooltip }) {
           setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
         }
         onMouseLeave={() => setTooltip(null)}
+        onClick={(e) =>
+          setTooltip({
+            content: `${p.toFixed(1)}% del inventario total está en vales`,
+            x: e.clientX,
+            y: e.clientY,
+            sticky: true,
+            onClose: () => setTooltip(null),
+          })
+        }
       />
       <text x={cx} y={cy + 8} textAnchor="middle" className="text-2xl fill-gray-800 font-bold">
         {p.toFixed(1)}%
@@ -930,95 +981,106 @@ function LineChart({ series, valueFormatter = (v) => v, setTooltip }) {
   const ticks = 5;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[20rem] max-h-[32rem]">
-      {[...Array(ticks)].map((_, i) => {
-        const tick = i / (ticks - 1);
-        const y = margin.top + plotH - tick * plotH;
-        const value = minValue + tick * valueRange;
-        return (
-          <g key={i}>
-            <line
-              x1={margin.left}
-              y1={y}
-              x2={margin.left + plotW}
-              y2={y}
-              stroke="#e5e7eb"
-              strokeWidth="1"
-            />
-            <text
-              x={margin.left - 10}
-              y={y + 4}
-              textAnchor="end"
-              className="text-xs fill-gray-500"
-            >
-              {valueFormatter(value)}
-            </text>
-          </g>
-        );
-      })}
+    <div className="chart-scroll">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-h-[20rem] max-h-[32rem]">
+        {[...Array(ticks)].map((_, i) => {
+          const tick = i / (ticks - 1);
+          const y = margin.top + plotH - tick * plotH;
+          const value = minValue + tick * valueRange;
+          return (
+            <g key={i}>
+              <line
+                x1={margin.left}
+                y1={y}
+                x2={margin.left + plotW}
+                y2={y}
+                stroke="#e5e7eb"
+                strokeWidth="1"
+              />
+              <text
+                x={margin.left - 10}
+                y={y + 4}
+                textAnchor="end"
+                className="text-xs fill-gray-500"
+              >
+                {valueFormatter(value)}
+              </text>
+            </g>
+          );
+        })}
 
-      {seriesWithPaths.map((s, idx) => (
-        <g key={idx}>
-          <path
-            d={s.path}
-            fill="none"
-            stroke={s.color}
-            strokeWidth={s.isTotal ? 3 : 2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="transition-all duration-300"
-          />
-          {s.points.map((p, pidx) => (
-            <circle
-              key={pidx}
-              cx={p.x}
-              cy={p.y}
-              r={s.isTotal ? 4 : 3}
-              fill={s.color}
-              stroke="white"
-              strokeWidth="2"
-              className="cursor-pointer"
-              onMouseEnter={(e) =>
-                setTooltip({
-                  content: `${s.label}\n${formatAxisDate(p.fecha)}: ${valueFormatter(p.value)}`,
-                  x: e.clientX,
-                  y: e.clientY,
-                })
-              }
-              onMouseMove={(e) =>
-                setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
-              }
-              onMouseLeave={() => setTooltip(null)}
+        {seriesWithPaths.map((s, idx) => (
+          <g key={idx}>
+            <path
+              d={s.path}
+              fill="none"
+              stroke={s.color}
+              strokeWidth={s.isTotal ? 3 : 2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-all duration-300"
             />
-          ))}
-        </g>
-      ))}
-
-      {allDates.map((date, i) => {
-        const x = getX(i);
-        return (
-          <g key={date}>
-            <line
-              x1={x}
-              y1={margin.top + plotH}
-              x2={x}
-              y2={margin.top + plotH + 5}
-              stroke="#9ca3af"
-              strokeWidth="1"
-            />
-            <text
-              x={x}
-              y={margin.top + plotH + 20}
-              textAnchor="start"
-              className="text-xs fill-gray-500"
-              transform={`rotate(-45, ${x}, ${margin.top + plotH + 20})`}
-            >
-              {formatAxisDate(date)}
-            </text>
+            {s.points.map((p, pidx) => (
+              <circle
+                key={pidx}
+                cx={p.x}
+                cy={p.y}
+                r={s.isTotal ? 4 : 3}
+                fill={s.color}
+                stroke="white"
+                strokeWidth="2"
+                className="cursor-pointer"
+                onMouseEnter={(e) =>
+                  setTooltip({
+                    content: `${s.label}\n${formatAxisDate(p.fecha)}: ${valueFormatter(p.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                  })
+                }
+                onMouseMove={(e) =>
+                  setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
+                }
+                onMouseLeave={() => setTooltip(null)}
+                onClick={(e) =>
+                  setTooltip({
+                    content: `${s.label}\n${formatAxisDate(p.fecha)}: ${valueFormatter(p.value)}`,
+                    x: e.clientX,
+                    y: e.clientY,
+                    sticky: true,
+                    onClose: () => setTooltip(null),
+                  })
+                }
+              />
+            ))}
           </g>
-        );
-      })}
-    </svg>
+        ))}
+
+        {allDates.map((date, i) => {
+          const x = getX(i);
+          return (
+            <g key={date}>
+              <line
+                x1={x}
+                y1={margin.top + plotH}
+                x2={x}
+                y2={margin.top + plotH + 5}
+                stroke="#9ca3af"
+                strokeWidth="1"
+              />
+              <text
+                x={x}
+                y={margin.top + plotH + 20}
+                textAnchor="start"
+                className="text-xs fill-gray-500"
+                transform={`rotate(-45, ${x}, ${margin.top + plotH + 20})`}
+              >
+                {formatAxisDate(date)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -2054,7 +2116,7 @@ export default function DashboardPage() {
                 <button
                   key={r.id}
                   onClick={() => setGraficaValesResponsable(r.id)}
-                  className={`px-2 py-1 text-xs rounded-lg border transition-colors ${
+                  className={`px-3 py-2 text-xs sm:px-2 sm:py-1 rounded-lg border transition-colors ${
                     graficaValesResponsable === r.id
                       ? `${r.activeBg} text-white border-transparent`
                       : `bg-white text-gray-600 ${r.border} ${r.hover}`
@@ -2090,7 +2152,7 @@ export default function DashboardPage() {
                 <button
                   key={n}
                   onClick={() => setTopExistenciasCount(n)}
-                  className={`px-2 py-1 text-xs rounded-lg border transition-colors ${
+                  className={`px-3 py-2 text-xs sm:px-2 sm:py-1 rounded-lg border transition-colors ${
                     topExistenciasCount === n
                       ? 'bg-p3-red text-white border-p3-red'
                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -2126,7 +2188,7 @@ export default function DashboardPage() {
                 <button
                   key={n}
                   onClick={() => setTopClientesCount(n)}
-                  className={`px-2 py-1 text-xs rounded-lg border transition-colors ${
+                  className={`px-3 py-2 text-xs sm:px-2 sm:py-1 rounded-lg border transition-colors ${
                     topClientesCount === n
                       ? 'bg-p3-red text-white border-p3-red'
                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -2419,7 +2481,7 @@ export default function DashboardPage() {
                   handleExistenciasPageChange(Math.max(0, existenciasOffset - EXISTENCIAS_PAGE_SIZE))
                 }
                 disabled={existenciasOffset === 0}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Anterior
               </button>
@@ -2432,7 +2494,7 @@ export default function DashboardPage() {
                   handleExistenciasPageChange(existenciasOffset + EXISTENCIAS_PAGE_SIZE)
                 }
                 disabled={existenciasOffset + EXISTENCIAS_PAGE_SIZE >= existenciasTotal}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Siguiente
               </button>
@@ -2699,6 +2761,24 @@ export default function DashboardPage() {
             },
             { key: 'almacen_origen', label: 'Almacén', sortable: true, wrap: true },
             { key: 'estado', label: 'Estado', sortable: true },
+            {
+              key: '_ver',
+              label: '',
+              sortable: false,
+              format: (raw, row) => (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-p3-red hover:text-white transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setValeSeleccionado(row);
+                  }}
+                >
+                  <Eye size={14} />
+                  Ver
+                </button>
+              ),
+            },
           ]}
           emptyMessage="No hay vales abiertos actualmente"
           emptyIcon={ClipboardList}
@@ -2837,6 +2917,24 @@ export default function DashboardPage() {
             sortable: true,
             accessor: (row) => Number(row.dias_pendiente) || 0,
             format: formatNumber,
+          },
+          {
+            key: '_ver',
+            label: '',
+            sortable: false,
+            format: (raw, row) => (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-p3-red hover:text-white transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPedidoSeleccionado(row);
+                }}
+              >
+                <Eye size={14} />
+                Ver
+              </button>
+            ),
           },
         ]}
         emptyMessage="No hay pedidos abiertos pendientes"
@@ -3192,7 +3290,7 @@ export default function DashboardPage() {
                   handleHistorialPageChange(Math.max(0, historialOffset - HISTORIAL_PAGE_SIZE))
                 }
                 disabled={historialOffset === 0}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Anterior
               </button>
@@ -3205,7 +3303,7 @@ export default function DashboardPage() {
                   handleHistorialPageChange(historialOffset + HISTORIAL_PAGE_SIZE)
                 }
                 disabled={historialOffset + HISTORIAL_PAGE_SIZE >= historialTotal}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Siguiente
               </button>
