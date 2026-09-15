@@ -19,6 +19,18 @@
         }
       })();
     </script>
+    <script>
+      // Defensa en profundidad: forzar https en producción.
+      // Bajo http el API (https-only) rechaza las llamadas con errores CORS.
+      (function () {
+        var host = location.hostname;
+        if (location.protocol === "http:" &&
+            host !== "localhost" && host !== "127.0.0.1" && host !== "::1") {
+          location.replace("https://" + location.host + location.pathname +
+                           location.search + location.hash);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
