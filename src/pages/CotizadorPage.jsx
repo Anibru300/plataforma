@@ -994,14 +994,14 @@ export default function CotizadorPage() {
               </h2>
               <button
                 onClick={agregarLinea}
-                className="flex items-center gap-2 px-3 py-1.5 bg-p3-red text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-4 py-2.5 sm:px-3 sm:py-1.5 bg-p3-red text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
               >
                 <Plus size={16} />
                 Agregar producto
               </button>
             </div>
 
-            <div className="overflow-x-auto -mx-5 sm:-mx-6">
+            <div className="hidden md:block overflow-x-auto -mx-5 sm:-mx-6">
               <div className="min-w-[1400px] px-5 sm:px-6">
                 <table className="w-full text-sm">
                   <thead>
@@ -1058,7 +1058,7 @@ export default function CotizadorPage() {
                                     type="button"
                                     onClick={() => cambiarFotoLinea(l.id, -1)}
                                     aria-label="Foto anterior"
-                                    className="p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
+                                    className="p-1.5 sm:p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
                                   >
                                     <ChevronLeft size={12} />
                                   </button>
@@ -1069,7 +1069,7 @@ export default function CotizadorPage() {
                                     type="button"
                                     onClick={() => cambiarFotoLinea(l.id, 1)}
                                     aria-label="Foto siguiente"
-                                    className="p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
+                                    className="p-1.5 sm:p-0.5 rounded hover:bg-gray-100 hover:text-p3-red"
                                   >
                                     <ChevronRight size={12} />
                                   </button>
@@ -1117,7 +1117,7 @@ export default function CotizadorPage() {
                             type="text"
                             value={l.almacen}
                             onChange={(e) => actualizarLinea(l.id, 'almacen', e.target.value)}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-xs"
+                            className="w-full px-3 py-2.5 sm:px-2 sm:py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm sm:text-xs"
                             placeholder="Almacén"
                           />
                         </td>
@@ -1142,7 +1142,7 @@ export default function CotizadorPage() {
                             step="1"
                             value={l.cantidad}
                             onChange={(e) => actualizarLinea(l.id, 'cantidad', e.target.value)}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-xs text-right"
+                            className="w-full px-3 py-2.5 sm:px-2 sm:py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm sm:text-xs text-right"
                           />
                         </td>
                         <td className="px-2 py-2 align-top">
@@ -1166,7 +1166,7 @@ export default function CotizadorPage() {
                                   setRawPrecio('');
                                 }
                               }}
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-xs text-right"
+                              className="w-full px-3 py-2.5 sm:px-2 sm:py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm sm:text-xs text-right"
                             />
                           ) : (
                             <button
@@ -1175,7 +1175,7 @@ export default function CotizadorPage() {
                                 setEditingPrecioId(l.id);
                                 setRawPrecio(String(l.precio_unitario ?? ''));
                               }}
-                              className="w-full px-2 py-1.5 text-xs text-right bg-transparent hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 transition-colors"
+                              className="w-full px-3 py-2.5 text-sm sm:px-2 sm:py-1.5 sm:text-xs text-right bg-transparent hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 transition-colors"
                             >
                               {formatCurrency(l.precio_unitario, moneda)}
                             </button>
@@ -1190,7 +1190,7 @@ export default function CotizadorPage() {
                               step="0.01"
                               value={l.descuento_pct}
                               onChange={(e) => actualizarLinea(l.id, 'descuento_pct', e.target.value)}
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-xs text-right"
+                              className="w-full px-3 py-2.5 sm:px-2 sm:py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm sm:text-xs text-right"
                             />
                           </td>
                         )}
@@ -1202,7 +1202,7 @@ export default function CotizadorPage() {
                               step="1"
                               value={l.stock_leon}
                               onChange={(e) => actualizarLinea(l.id, 'stock_leon', e.target.value)}
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-xs text-right"
+                              className="w-full px-3 py-2.5 sm:px-2 sm:py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm sm:text-xs text-right"
                             />
                           </td>
                         )}
@@ -1223,6 +1223,240 @@ export default function CotizadorPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Partidas como tarjetas en móvil (mismo estado/handlers que la tabla) */}
+            <div className="md:hidden space-y-3">
+              {lineasCalculadas.map((l) => (
+                <div
+                  key={l.id}
+                  className="border border-gray-200 rounded-xl p-3 space-y-3 bg-white"
+                >
+                  {/* Fila superior: foto + código + descripción */}
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-20 flex flex-col items-center gap-1">
+                      {loadingFotos[l.codigo] ? (
+                        <div className="w-16 h-16 flex items-center justify-center">
+                          <div className="w-5 h-5 border border-p3-red border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      ) : (fotosMap[l.codigo]?.length || 0) > 0 ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFotoModal({
+                                open: true,
+                                url: fotosMap[l.codigo][fotoActualLinea(l)],
+                                codigo: l.codigo,
+                              })
+                            }
+                            className="w-16 h-16 rounded border border-gray-200 overflow-hidden hover:border-p3-red focus:outline-none focus:ring-2 focus:ring-p3-red"
+                            title={`Ver foto de ${l.codigo}`}
+                          >
+                            <img
+                              src={fotosMap[l.codigo][fotoActualLinea(l)]}
+                              alt={l.codigo}
+                              className="w-full h-full object-contain"
+                            />
+                          </button>
+                          {fotosMap[l.codigo].length > 1 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <button
+                                type="button"
+                                onClick={() => cambiarFotoLinea(l.id, -1)}
+                                aria-label="Foto anterior"
+                                className="p-2 rounded hover:bg-gray-100 hover:text-p3-red"
+                              >
+                                <ChevronLeft size={14} />
+                              </button>
+                              <span className="tabular-nums">
+                                {fotoActualLinea(l) + 1}/{fotosMap[l.codigo].length}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => cambiarFotoLinea(l.id, 1)}
+                                aria-label="Foto siguiente"
+                                className="p-2 rounded hover:bg-gray-100 hover:text-p3-red"
+                              >
+                                <ChevronRight size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div
+                          className="w-16 h-16 flex items-center justify-center text-gray-300"
+                          title="Sin foto disponible"
+                        >
+                          <ImageIcon size={24} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="relative">
+                        <SearchableSelect
+                          value={l.codigo}
+                          onChange={(val) => handleCodigoChange(l.id, val)}
+                          options={codigosOptions}
+                          placeholder="Buscar código..."
+                          emptyMessage="No se encontraron códigos"
+                          className="text-xs"
+                          allowFreeText
+                        />
+                        {loadingPrecio[l.id] && (
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2">
+                            <div className="w-3 h-3 border border-p3-red border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={l.descripcion}
+                        onChange={(e) => actualizarLinea(l.id, 'descripcion', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm"
+                        placeholder="Descripción"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Campos editables */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Cantidad
+                      </label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        step="1"
+                        value={l.cantidad}
+                        onChange={(e) => actualizarLinea(l.id, 'cantidad', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm text-right"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        P. Unitario
+                      </label>
+                      {editingPrecioId === l.id ? (
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          step="0.01"
+                          value={rawPrecio}
+                          autoFocus
+                          onChange={(e) => setRawPrecio(e.target.value)}
+                          onBlur={() => {
+                            actualizarLinea(l.id, 'precio_unitario', rawPrecio);
+                            setEditingPrecioId(null);
+                            setRawPrecio('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              actualizarLinea(l.id, 'precio_unitario', rawPrecio);
+                              setEditingPrecioId(null);
+                              setRawPrecio('');
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm text-right"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPrecioId(l.id);
+                            setRawPrecio(String(l.precio_unitario ?? ''));
+                          }}
+                          className="w-full px-3 py-2 text-sm text-right bg-white rounded-lg border border-gray-300 transition-colors"
+                        >
+                          {formatCurrency(l.precio_unitario, moneda)}
+                        </button>
+                      )}
+                    </div>
+                    {conDescuento && (
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Desc %
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={l.descuento_pct}
+                          onChange={(e) => actualizarLinea(l.id, 'descuento_pct', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm text-right"
+                        />
+                      </div>
+                    )}
+                    {conStockLeon && (
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Stock León
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          step="1"
+                          value={l.stock_leon}
+                          onChange={(e) => actualizarLinea(l.id, 'stock_leon', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm text-right"
+                        />
+                      </div>
+                    )}
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Almacén
+                      </label>
+                      <input
+                        type="text"
+                        value={l.almacen}
+                        onChange={(e) => actualizarLinea(l.id, 'almacen', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-p3-red focus:border-p3-red text-sm"
+                        placeholder="Almacén"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Info de solo lectura */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                    <span>
+                      Existencia:{' '}
+                      <span className="text-gray-800">
+                        {loadingExistencias && !existenciasMap[l.codigo]
+                          ? '...'
+                          : formatNumber((existenciasMap[l.codigo]?.existencia_total ?? 0))}
+                      </span>
+                    </span>
+                    <span>
+                      En vales:{' '}
+                      <span className="text-gray-800">
+                        {loadingExistencias && !existenciasMap[l.codigo]
+                          ? '...'
+                          : formatNumber((existenciasMap[l.codigo]?.material_en_vales ?? 0))}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Total de línea + eliminar */}
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Total: {formatCurrency(l.total, moneda)}
+                    </span>
+                    <button
+                      onClick={() => eliminarLinea(l.id)}
+                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                      title="Eliminar línea"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {lineas.length >= 4 && (
@@ -1283,7 +1517,7 @@ export default function CotizadorPage() {
             <button
               type="button"
               onClick={() => setFotoModal({ open: false, url: null, codigo: '' })}
-              className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-gray-700 hover:text-p3-red shadow-sm z-10"
+              className="absolute top-2 right-2 p-2.5 sm:p-1.5 bg-white/90 rounded-full text-gray-700 hover:text-p3-red shadow-sm z-10"
             >
               <X size={20} />
             </button>
