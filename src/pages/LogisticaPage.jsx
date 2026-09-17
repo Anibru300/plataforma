@@ -178,7 +178,7 @@ function Modal({ title, onClose, children, wide = false }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-3 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X size={18} />
           </button>
@@ -278,7 +278,7 @@ function NecesidadModal({ onClose, onGuardar, guardando }) {
             autoFocus
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad *</label>
             <input
@@ -535,7 +535,7 @@ function AbastecimientoModal({ editando, onClose, onGuardar, guardando }) {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad comprada *</label>
             <input
@@ -586,7 +586,7 @@ function AbastecimientoModal({ editando, onClose, onGuardar, guardando }) {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">OC</label>
             <input
@@ -776,7 +776,7 @@ function RecepcionModal({ abastecimientos, subalmacenes, onClose, onGuardar, gua
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad recibida *</label>
             <input
@@ -803,7 +803,7 @@ function RecepcionModal({ abastecimientos, subalmacenes, onClose, onGuardar, gua
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Documento</label>
             <input
@@ -917,7 +917,7 @@ function VincularSaeModal({ recepcion, onClose, onVincular, vinculando }) {
                   type="button"
                   disabled={vinculando}
                   onClick={() => onVincular(c.id)}
-                  className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium bg-p3-red hover:bg-p3-red-dark text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="shrink-0 flex items-center gap-1 px-3 py-2.5 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-p3-red hover:bg-p3-red-dark text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {vinculando ? (
                     <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1480,7 +1480,7 @@ export default function LogisticaPage() {
           <button
             type="button"
             onClick={() => guardarPrioridad(row.id)}
-            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+            className="p-3 sm:p-1 text-emerald-600 hover:bg-emerald-50 rounded"
             title="Guardar"
           >
             <Check size={14} />
@@ -1488,7 +1488,7 @@ export default function LogisticaPage() {
           <button
             type="button"
             onClick={() => setPrioridadEditId(null)}
-            className="p-1 text-gray-400 hover:bg-gray-100 rounded"
+            className="p-3 sm:p-1 text-gray-400 hover:bg-gray-100 rounded"
             title="Cancelar"
           >
             <X size={14} />
@@ -1783,7 +1783,7 @@ export default function LogisticaPage() {
               e.stopPropagation();
               handleCerrarDemanda(row);
             }}
-            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-3 sm:p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Cerrar necesidad"
           >
             <X size={14} />
@@ -2200,7 +2200,7 @@ export default function LogisticaPage() {
                 setOcEditando(row);
                 setOcModalOpen(true);
               }}
-              className="p-1.5 text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
+              className="p-3 sm:p-1.5 text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
               title="Editar"
             >
               <Pencil size={14} />
@@ -2211,7 +2211,7 @@ export default function LogisticaPage() {
                 e.stopPropagation();
                 handleEliminarOc(row);
               }}
-              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-3 sm:p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Eliminar"
             >
               <X size={14} />
@@ -2350,7 +2350,7 @@ export default function LogisticaPage() {
                     <button
                       type="button"
                       onClick={() => handleEliminarAsignacion(det)}
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-3 sm:p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Eliminar asignación"
                     >
                       <X size={14} />
@@ -2475,7 +2475,7 @@ export default function LogisticaPage() {
                 e.stopPropagation();
                 setVinculandoSae(row);
               }}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1 px-3 py-2.5 sm:px-2 sm:py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               title="Vincular con entrada de compra en SAE"
             >
               <Link size={12} />

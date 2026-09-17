@@ -758,7 +758,7 @@ export default function AdminPage() {
                     <div className="inline-flex items-center gap-1">
                       <button
                         onClick={() => navigateToEntity(entidad.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-2.5 sm:px-2.5 sm:py-1.5 text-xs font-medium text-gray-700 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
                         title="Ver detalle"
                       >
                         <Eye size={14} />
@@ -766,7 +766,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={() => handleOpenEntityModal(entidad)}
-                        className="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-2.5 sm:px-2 sm:py-1.5 text-xs font-medium text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <Pencil size={14} />
@@ -795,7 +795,7 @@ export default function AdminPage() {
           <button
             onClick={() => setSkip((s) => Math.max(0, s - LIMIT))}
             disabled={skip === 0}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-3 sm:px-3 sm:py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
           >
             Anterior
           </button>
@@ -805,7 +805,7 @@ export default function AdminPage() {
           <button
             onClick={() => setSkip((s) => Math.min((pages - 1) * LIMIT, s + LIMIT))}
             disabled={skip + LIMIT >= totalEntidades}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-3 sm:px-3 sm:py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
           >
             Siguiente
           </button>
@@ -1116,14 +1116,14 @@ export default function AdminPage() {
       <div className="inline-flex items-center gap-1">
         <button
           onClick={onEdit}
-          className="p-1.5 text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
+          className="p-3 sm:p-1.5 text-gray-500 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
           title="Editar"
         >
           <Pencil size={14} />
         </button>
         <button
           onClick={onDelete}
-          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          className="p-3 sm:p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           title="Eliminar"
         >
           <Trash2 size={14} />
@@ -1570,7 +1570,7 @@ export default function AdminPage() {
           <button
             onClick={() => setPortalesSkip((s) => Math.max(0, s - PORTALES_LIMIT))}
             disabled={portalesSkip === 0}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-3 sm:px-3 sm:py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
           >
             Anterior
           </button>
@@ -1580,7 +1580,7 @@ export default function AdminPage() {
           <button
             onClick={() => setPortalesSkip((s) => Math.min((pages - 1) * PORTALES_LIMIT, s + PORTALES_LIMIT))}
             disabled={portalesSkip + PORTALES_LIMIT >= totalPortales}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-3 sm:px-3 sm:py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
           >
             Siguiente
           </button>
@@ -2300,6 +2300,7 @@ export default function AdminPage() {
       formatLabel,
       showValue = true,
     }) {
+      const [tapped, setTapped] = useState(null);
       if (!data || data.length === 0) {
         return <p className="text-sm text-gray-500">Sin datos</p>;
       }
@@ -2313,7 +2314,7 @@ export default function AdminPage() {
             {data.map((d, i) => {
               const pct = Math.round((d[valueKey] / max) * 100);
               return (
-                <div key={i} className="group">
+                <div key={i} className="group cursor-pointer" onClick={() => setTapped(tapped === i ? null : i)}>
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="text-gray-700 truncate max-w-[60%]">{d[labelKey]}</span>
                     <span className="font-medium text-gray-900">{d[valueKey].toLocaleString()}</span>
@@ -2323,7 +2324,7 @@ export default function AdminPage() {
                       className={`${color} h-3 rounded-full transition-all group-hover:opacity-80`}
                       style={{ width: `${pct}%` }}
                     ></div>
-                    <div className="absolute left-0 -top-8 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 shadow-lg">
+                    <div className={`absolute left-0 -top-8 ${tapped === i ? 'block' : 'hidden group-hover:block'} bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 shadow-lg`}>
                       {d[labelKey]}: {d[valueKey].toLocaleString()} ({pct}%)
                     </div>
                   </div>
@@ -2346,7 +2347,7 @@ export default function AdminPage() {
             {data.map((d, i) => {
               const pct = Math.round((d[valueKey] / max) * 100) || 3;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 h-full justify-end group">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 h-full justify-end group cursor-pointer" onClick={() => setTapped(tapped === i ? null : i)}>
                   <div className="relative w-full flex justify-center" style={{ height: `${pct}%` }}>
                     <div
                       className={`w-full ${color} rounded-t-md transition-all group-hover:opacity-80 self-end`}
@@ -2357,7 +2358,7 @@ export default function AdminPage() {
                         </span>
                       )}
                     </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 shadow-lg">
+                    <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 ${tapped === i ? 'block' : 'hidden group-hover:block'} bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 shadow-lg`}>
                       {d[labelKey]}: {d[valueKey].toLocaleString()}
                     </div>
                   </div>
@@ -2373,6 +2374,7 @@ export default function AdminPage() {
     }
 
     function HeatmapDiaHora({ data }) {
+      const [tapped, setTapped] = useState(null);
       if (!data || data.length === 0) {
         return <p className="text-sm text-gray-500">Sin datos</p>;
       }
@@ -2389,7 +2391,8 @@ export default function AdminPage() {
       const nombres = { 0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb' };
 
       return (
-        <div className="overflow-x-auto pb-1">
+        <div className="relative">
+          <div className="overflow-x-auto pb-1">
           <div className="min-w-[680px]">
             <div className="grid gap-[3px]" style={{ gridTemplateColumns: '2.5rem repeat(24, 1fr)' }}>
               <span></span>
@@ -2402,19 +2405,21 @@ export default function AdminPage() {
                 <Fragment key={dia}>
                   <span className="text-[10px] text-gray-500 pr-1 self-center text-right">{nombres[dia]}</span>
                   {horas.map((h) => {
-                    const total = lookup[`${dia}-${String(h).padStart(2, '0')}`] || 0;
+                    const cellKey = `${dia}-${String(h).padStart(2, '0')}`;
+                    const total = lookup[cellKey] || 0;
                     const intensity = total > 0 ? 0.15 + 0.85 * (total / max) : 0;
                     return (
                       <div
                         key={h}
-                        className="group relative h-6 rounded-[3px] transition-transform hover:scale-110 cursor-default"
+                        className="group relative h-6 rounded-[3px] transition-transform hover:scale-110 cursor-pointer"
+                        onClick={() => setTapped(tapped === cellKey ? null : cellKey)}
                         style={{
                           backgroundColor:
                             total > 0 ? `rgba(196, 30, 58, ${intensity.toFixed(2)})` : '#F3F4F6',
                         }}
                       >
                         {total > 0 && (
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-20 shadow-lg pointer-events-none">
+                          <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 ${tapped === cellKey ? 'block' : 'hidden group-hover:block'} bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-20 shadow-lg pointer-events-none`}>
                             {nombres[dia]} {String(h).padStart(2, '0')}:00 — {total.toLocaleString()} eventos
                           </div>
                         )}
@@ -2432,6 +2437,8 @@ export default function AdminPage() {
               <span>Más</span>
             </div>
           </div>
+          </div>
+          <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none sm:hidden" aria-hidden="true" />
         </div>
       );
     }
