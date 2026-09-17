@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import VistaEscritorioToggle from '../components/ui/VistaEscritorioToggle.jsx';
 import {
   fetchExistenciasPorCodigos,
   fetchHistorialVentasMetadata,
@@ -803,6 +804,7 @@ export default function CotizadorPage() {
               <span className="hidden sm:inline text-sm text-gray-600">
                 {user?.nombre || user?.email}
               </span>
+              <VistaEscritorioToggle />
               <button
                 onClick={logout}
                 className="text-sm text-red-600 hover:text-red-700 font-medium"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import VistaEscritorioToggle from '../components/ui/VistaEscritorioToggle.jsx';
 import { useToast } from '../components/ui/Toast';
 import DebouncedInput from '../components/ui/DebouncedInput.jsx';
 import DataTable from '../components/ui/DataTable.jsx';
@@ -2612,6 +2613,7 @@ export default function LogisticaPage() {
               >
                 <RefreshCw size={18} />
               </button>
+              <VistaEscritorioToggle />
               <button
                 onClick={logout}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-p3-red hover:bg-red-50 rounded-lg transition-colors"
